@@ -1,0 +1,40 @@
+--- php-5.2.10/ext/date/php_date.c	2009-06-05 17:34:30.000000000 -0500
++++ php5.2-200907301830/ext/date/php_date.c	2009-07-17 07:18:40.000000000 -0500
+@@ -16,7 +16,7 @@
+    +----------------------------------------------------------------------+
+  */
+ 
+-/* $Id: php_date.c,v 1.43.2.45.2.71 2009/06/05 22:34:30 rasmus Exp $ */
++/* $Id: php_date.c 283173 2009-06-30 16:18:34Z derick $ */
+ 
+ #include "php.h"
+ #include "php_streams.h"
+@@ -38,6 +38,10 @@
+ static __inline __int64_t llabs( __int64_t i ) { return i >= 0 ? i : -i; }
+ #endif
+ 
++#if defined(NETWARE) && defined(__MWERKS__)
++static __inline long long llabs( long long i ) { return i >= 0 ? i : -i; }
++#endif
++
+ /* {{{ arginfo */
+ static
+ ZEND_BEGIN_ARG_INFO_EX(arginfo_date, 0, 0, 1)
+@@ -798,7 +802,7 @@
+ 			/* year */
+ 			case 'L': length = slprintf(buffer, 32, "%d", timelib_is_leap((int) t->y)); break;
+ 			case 'y': length = slprintf(buffer, 32, "%02d", (int) t->y % 100); break;
+-			case 'Y': length = slprintf(buffer, 32, "%s%04ld", t->y < 0 ? "-" : "", llabs(t->y)); break;
++			case 'Y': length = slprintf(buffer, 32, "%s%04lld", t->y < 0 ? "-" : "", llabs(t->y)); break;
+ 
+ 			/* time */
+ 			case 'a': length = slprintf(buffer, 32, "%s", t->h >= 12 ? "pm" : "am"); break;
+@@ -1748,7 +1752,7 @@
+ 	}
+ 	timelib_unixtime2local(now, (timelib_sll) time(NULL));
+ 
+-	timelib_fill_holes(dateobj->time, now, 0);
++	timelib_fill_holes(dateobj->time, now, TIMELIB_NO_CLONE);
+ 	timelib_update_ts(dateobj->time, tzi);
+ 
+ 	dateobj->time->have_weekday_relative = dateobj->time->have_relative = 0;

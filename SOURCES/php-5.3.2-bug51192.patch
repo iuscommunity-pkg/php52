@@ -1,0 +1,11 @@
+--- php-5.3.2/ext/filter/logical_filters.c.bug51192	2010-01-25 10:14:28.000000000 -0600
++++ php-5.3.2/ext/filter/logical_filters.c	2010-04-06 17:49:14.819913367 -0500
+@@ -467,7 +467,7 @@
+ 		s = url->host;
+ 
+ 		while (s < e) {
+-			if (!isalnum((int)*(unsigned char *)s) && *s != '_' && *s != '.') {
++			if (!isalnum((int)*(unsigned char *)s) && *s != '-' && *s != '.') {
+ 				goto bad_url;
+ 			}
+ 			s++;

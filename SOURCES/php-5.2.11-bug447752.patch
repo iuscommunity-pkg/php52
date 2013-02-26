@@ -1,0 +1,22 @@
+--- php-5.2.11/ext/standard/file.c	2009-05-24 11:02:22.000000000 -0500
++++ php5.2-200910102230/ext/standard/file.c	2009-09-29 19:38:52.000000000 -0500
+@@ -21,7 +21,7 @@
+    +----------------------------------------------------------------------+
+  */
+ 
+-/* $Id: file.c 281040 2009-05-24 16:02:22Z iliaa $ */
++/* $Id: file.c 288971 2009-09-29 23:36:30Z felipe $ */
+ 
+ /* Synced with php 3.0 revision 1.218 1999-06-16 [ssb] */
+ 
+@@ -838,6 +838,10 @@
+ 	convert_to_string_ex(arg1);
+ 	convert_to_string_ex(arg2);
+ 
++	if (PG(safe_mode) &&(!php_checkuid(Z_STRVAL_PP(arg1), NULL, CHECKUID_ALLOW_ONLY_DIR))) {
++		RETURN_FALSE;
++	}
++
+ 	if (php_check_open_basedir(Z_STRVAL_PP(arg1) TSRMLS_CC)) {
+ 		RETURN_FALSE;
+ 	}

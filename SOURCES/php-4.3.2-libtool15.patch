@@ -1,0 +1,19 @@
+
+Enable use of libtool 1.5: always build all objects using the libtool
+wrapper script, don't try and build some directly.
+
+--- php-5.1.1/acinclude.m4.libtool15
++++ php-5.1.1/acinclude.m4
+@@ -822,10 +822,10 @@
+ AC_DEFUN([PHP_BUILD_PROGRAM],[
+   OVERALL_TARGET=[]ifelse($1,,php,$1)
+   php_c_pre='$(LIBTOOL) --mode=compile $(CC)'
+-  php_c_meta='$(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)'
++  php_c_meta='$(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) -prefer-non-pic'
+   php_c_post=
+   php_cxx_pre='$(LIBTOOL) --mode=compile $(CXX)'
+-  php_cxx_meta='$(COMMON_FLAGS) $(CXXFLAGS_CLEAN) $(EXTRA_CXXFLAGS)'
++  php_cxx_meta='$(COMMON_FLAGS) $(CXXFLAGS_CLEAN) $(EXTRA_CXXFLAGS) -prefer-non-pic'
+   php_cxx_post=
+   php_lo=lo
+ 

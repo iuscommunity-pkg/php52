@@ -1,0 +1,44 @@
+--- php-5.2.10/ext/date/php_date.c.orig	2009-07-30 16:09:06.000000000 -0500
++++ php-5.2.10/ext/date/php_date.c	2009-07-30 16:13:53.000000000 -0500
+@@ -1123,7 +1123,7 @@
+ 	long  preset_ts, ts;
+ 
+ 	timelib_time *t, *now;
+-	timelib_tzinfo *tzi;
++	timelib_tzinfo *tzi, *old_tzi;
+ 
+ 	tzi = get_timezone_info(TSRMLS_C);
+ 
+@@ -1134,10 +1134,14 @@
+ 		initial_ts = emalloc(25);
+ 		snprintf(initial_ts, 24, "@%ld UTC", preset_ts);
+ 		t = timelib_strtotime(initial_ts, strlen(initial_ts), NULL, DATE_TIMEZONEDB); /* we ignore the error here, as this should never fail */
++		old_tzi = t->tz_info;
+ 		timelib_update_ts(t, tzi);
+ 		now->tz_info = tzi;
+ 		now->zone_type = TIMELIB_ZONETYPE_ID;
+ 		timelib_unixtime2local(now, t->sse);
++		if ( old_tzi ) {
++			timelib_tzinfo_dtor(old_tzi);
++		}
+ 		timelib_time_dtor(t);
+ 		efree(initial_ts);
+ 	} else if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &times, &time_len, &preset_ts) != FAILURE) {
+@@ -1156,6 +1160,7 @@
+ 	}
+ 	
+ 	t = timelib_strtotime(times, time_len, &error, DATE_TIMEZONEDB);
++	old_tzi = t->tz_info;
+ 	error1 = error->error_count;
+ 	timelib_error_container_dtor(error);
+ 	timelib_fill_holes(t, now, TIMELIB_NO_CLONE);
+@@ -1163,6 +1168,9 @@
+ 	ts = timelib_date_to_int(t, &error2);
+ 
+ 	timelib_time_dtor(now);
++	if ( old_tzi ) {
++		timelib_tzinfo_dtor(old_tzi);
++	}
+ 	timelib_time_dtor(t);
+ 
+ 	if (error1 || error2) {

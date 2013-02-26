@@ -1,0 +1,94 @@
+--- php-5.2.1/ext/pgsql/config.m4-PQfreemem	2006-10-06 16:45:10.000000000 -0500
++++ php-5.2.1/ext/pgsql/config.m4	2007-02-09 10:05:10.000000000 -0600
+@@ -91,6 +91,7 @@
+   AC_CHECK_LIB(pq, PQgetCopyData,AC_DEFINE(HAVE_PQGETCOPYDATA,1,[PostgreSQL 7.4 or later]))
+   AC_CHECK_LIB(pq, PQsetErrorVerbosity,AC_DEFINE(HAVE_PQSETERRORVERBOSITY,1,[PostgreSQL 7.4 or later]))
+   AC_CHECK_LIB(pq, PQftable,AC_DEFINE(HAVE_PQFTABLE,1,[PostgreSQL 7.4 or later]))
++  AC_CHECK_LIB(pq, PQfreemem,AC_DEFINE(HAVE_PQFREEMEM,1,[PostgreSQL 7.4 or later]))
+   AC_CHECK_LIB(pq, PQescapeStringConn, AC_DEFINE(HAVE_PQESCAPE_CONN,1,[PostgreSQL 8.1.4 or later]))
+   AC_CHECK_LIB(pq, PQescapeByteaConn, AC_DEFINE(HAVE_PQESCAPE_BYTEA_CONN,1,[PostgreSQL 8.1.4 or later]))
+   AC_CHECK_LIB(pq, pg_encoding_to_char,AC_DEFINE(HAVE_PGSQL_WITH_MULTIBYTE_SUPPORT,1,[Whether libpq is compiled with --enable-multibyte]))
+--- php-5.2.1/ext/pgsql/pgsql.c-PQfreemem	2007-01-11 10:45:37.000000000 -0600
++++ php-5.2.1/ext/pgsql/pgsql.c	2007-02-09 10:12:11.000000000 -0600
+@@ -3368,7 +3368,11 @@
+ 							break;
+ 						default:
+ 							add_next_index_string(return_value, csv, 1);
++#if HAVE_PQFREEMEM
+ 							PQfreemem(csv);
++#else
++							free(csv);
++#endif
+ 							break;
+ 					}
+ 				}
+@@ -3622,7 +3626,11 @@
+ 		to = (char *)PQescapeBytea((unsigned char*)from, from_len, &to_len);
+ 
+ 	RETVAL_STRINGL(to, to_len-1, 1); /* to_len includes addtional '\0' */
++#if HAVE_PQFREEMEM
+ 	PQfreemem(to);
++#else
++	free(to);
++#endif
+ }
+ /* }}} */
+ 
+@@ -3747,10 +3755,17 @@
+ #if HAVE_PQUNESCAPEBYTEA
+ 	tmp = (char *)PQunescapeBytea((unsigned char*)from, &to_len);
+ 	to = estrndup(tmp, to_len);
+-	PQfreemem(tmp);
+ #else
+ 	to = (char *)php_pgsql_unescape_bytea((unsigned char*)from, &to_len);
+ #endif
++    if(tmp) {
++#if HAVE_PQFREEMEM
++	   PQfreemem(tmp);
++#else
++	   free(tmp);
++#endif
++	}
++  
+ 	if (!to) {
+ 		RETURN_FALSE;
+ 	}
+@@ -4360,7 +4375,11 @@
+ 		add_assoc_string(return_value, "message", pgsql_notify->relname, 1);
+ 		add_assoc_long(return_value, "pid", pgsql_notify->be_pid);
+ 	}
++#if HAVE_PQFREEMEM
+ 	PQfreemem(pgsql_notify);
++#else
++	free(pgsql_notify);
++#endif
+ }
+ /* }}} */
+ 
+@@ -5166,7 +5185,11 @@
+ 							Z_STRLEN_P(new_val) = to_len-1; /* PQescapeBytea's to_len includes additional '\0' */
+ 							Z_STRVAL_P(new_val) = emalloc(to_len);
+ 							memcpy(Z_STRVAL_P(new_val), tmp, to_len);
++#if HAVE_PQFREEMEM
+ 							PQfreemem(tmp);
++#else
++							free(tmp);
++#endif
+ 							php_pgsql_add_quotes(new_val, 1 TSRMLS_CC);
+ 								
+ 						}
+--- php-5.2.1/ext/pdo_pgsql/pgsql_driver.c-PQfreemem	2007-01-01 03:36:05.000000000 -0600
++++ php-5.2.1/ext/pdo_pgsql/pgsql_driver.c	2007-02-09 11:51:54.000000000 -0600
+@@ -325,7 +325,12 @@
+ 			(*quoted)[0] = '\'';
+ 			(*quoted)[*quotedlen-1] = '\'';
+ 			(*quoted)[*quotedlen] = '\0';
++#if HAVE_PQFREEMEM
+ 			PQfreemem(escaped);
++#else
++			free(escaped);
++#endif
++
+ 			break;
+ 		default:
+ 			*quoted = safe_emalloc(2, unquotedlen, 3);

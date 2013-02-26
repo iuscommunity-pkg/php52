@@ -1,0 +1,25 @@
+--- php-5.2.4/acinclude.m4.norpath	2007-08-31 15:36:16.000000000 -0500
++++ php-5.2.4/acinclude.m4	2007-08-31 15:40:20.000000000 -0500
+@@ -432,6 +432,7 @@
+ dnl internal, don't use
+ AC_DEFUN([_PHP_ADD_LIBPATH_GLOBAL],[
+   PHP_RUN_ONCE(LIBPATH, $1, [
++    test "x$PHP_RPATH" != "xno" &&
+     test -n "$ld_runpath_switch" && LDFLAGS="$LDFLAGS $ld_runpath_switch$1"
+     LDFLAGS="$LDFLAGS -L$1"
+     PHP_RPATHS="$PHP_RPATHS $1"
+@@ -450,8 +451,12 @@
+       _PHP_ADD_LIBPATH_GLOBAL([$ai_p])
+     ],[
+       if test "$ext_shared" = "yes"; then
+-        $2="-L$ai_p [$]$2"
+-        test -n "$ld_runpath_switch" && $2="$ld_runpath_switch$ai_p [$]$2"
++        if test "x$PHP_RPATH" = "xno"; then
++          $2="-L$ai_p [$]$2"
++        else
++          $2="-L$ai_p [$]$2"
++          test -n "$ld_runpath_switch" && $2="$ld_runpath_switch$ai_p [$]$2"
++        fi
+       else
+         _PHP_ADD_LIBPATH_GLOBAL([$ai_p])
+       fi
