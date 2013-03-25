@@ -42,7 +42,7 @@
 Summary: The PHP HTML-embedded scripting language. (PHP: Hypertext Preprocessor)
 Name: %{name}
 Version: 5.2.17
-Release: 5.ius%{?dist}
+Release: 6.ius%{?dist}
 License: The PHP License v3.01
 Group: Development/Languages
 Vendor: Rackspace US, Inc.
@@ -268,7 +268,7 @@ Provides: %{real_name}-mysql = %{version}-%{release}
 Conflicts: %{real_name}-mysql < %{base_ver}
 Provides: php_database, %{name}-mysqli, %{real_name}-mysqli
 %if 0%{?rhel} >= 5 
-BuildRequires: mysql-devel < 5.0.91 
+BuildRequires: mysql-devel < 5.0.96
 %endif
 
 %if 0%{?el3} || 0%{?el4}
@@ -954,6 +954,9 @@ fi
 
 
 %changelog
+* Mon Mar 25 2013 Ben Harper <ben.harper@rackspace.com> - 5.2.17-6.ius
+- increase BuildRequire mysql-devel to reflect updates in base release 
+
 * Tue Apr 10 2012 Jeffrey Ness <jeffrey.ness@rackspace.com> - 5.2.17-5.ius
 - Removing old psa-comat package
 
